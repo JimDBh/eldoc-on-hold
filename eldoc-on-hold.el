@@ -32,6 +32,7 @@
 ;;; Code:
 
 (eval-when-compile (require 'eldoc))
+(declare-function 'company-cancel nil)
 
 (defcustom eldoc-on-hold-delay-interval 5.0
   "Delayed time to display eldoc."
@@ -42,6 +43,11 @@
   "Time to pause on-hold after clearing eldoc messages."
   :group 'eldoc-on-hold
   :type 'number)
+
+(defcustom eldoc-on-hold-pick-up-cancel-company t
+  "Whether to cancel company popup when picking up"
+  :group 'eldoc-on-hold
+  :type 'boolean)
 
 (defvar eldoc-on-hold--msg-timer nil
   "Timer for displaying eldoc messages.")
@@ -125,6 +131,8 @@ STRING is the message to display."
 If we have a pending timer, do what is planned by the timer right now.
 If there's no pending timer, call eldoc and display the message."
   (interactive)
+  (when (and (featurep 'company) eldoc-on-hold-pick-up-cancel-company)
+    (company-cancel))
   (when (not eldoc-on-hold--msg-timer)
     (progn
       (call-interactively 'eldoc-on-hold--dummy t)))
