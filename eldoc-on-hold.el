@@ -95,9 +95,7 @@ STRING is the message to display."
          (setq eldoc-on-hold--msg-timer
                (run-with-timer eldoc-on-hold-delay-interval nil orig-fun string))))
   ;; Recover the original eldoc-on-hold--delay-interval value
-  (when eldoc-on-hold--prev-interval
-    (setq eldoc-on-hold-delay-interval eldoc-on-hold--prev-interval)
-    (setq eldoc-on-hold--prev-interval nil))
+  (setq eldoc-on-hold-delay-interval eldoc-on-hold--prev-interval)
   eldoc-last-message)
 
 (defun eldoc-on-hold--dummy ()
@@ -108,9 +106,7 @@ STRING is the message to display."
         (eldoc--last-request-state nil))
     ;; Set eldoc-on-hold-delay-interval to a very small value to display the
     ;; message almost immediately.
-    (when (not eldoc-on-hold--prev-interval)
-      (setq eldoc-on-hold--prev-interval eldoc-on-hold-delay-interval)
-      (setq eldoc-on-hold-delay-interval 0.001))
+    (setq eldoc-on-hold-delay-interval 0.001)
     ;; The function eldoc-print-current-symbol-info requires that
     ;; 1. last-command is in eldoc-message-commands,
     ;; 2. this-command is nil
@@ -142,6 +138,13 @@ If there's no pending timer, call eldoc and display the message."
       (cancel-timer eldoc-on-hold--msg-timer)
       (setq eldoc-on-hold--msg-timer nil))))
 
+(defun eldoc-on-hold--cancel-timer ()
+  "Cancel the delayed eldoc display if necessary."
+  (when (and eldoc-on-hold--msg-timer
+             (or (not (eldoc--message-command-p last-command))
+                 this-command))
+    (cancel-timer eldoc-on-hold--msg-timer)))
+
 (define-minor-mode global-eldoc-on-hold-mode
   "Enable global-eldoc-on-hold mode."
   :group 'eldoc-on-hold
@@ -151,23 +154,25 @@ If there's no pending timer, call eldoc and display the message."
         (setq eldoc-on-hold--msg-timer nil)
         (setq eldoc-on-hold--no-delay-timer nil)
         (setq eldoc-on-hold--use-timer t)
-        (setq eldoc-on-hold--prev-interval nil)
+        (setq eldoc-on-hold--prev-interval eldoc-on-hold-delay-interval)
         (advice-add 'eldoc--message :around #'eldoc-on-hold--msg)
         (advice-add 'eldoc-pre-command-refresh-echo-area :around #'eldoc-on-hold--refresh)
         (eldoc-add-command 'eldoc-on-hold--dummy)
-        (eldoc-add-command 'eldoc-on-hold-pick-up))
+        (eldoc-add-command 'eldoc-on-hold-pick-up)
+        (add-hook 'post-command-hook #'eldoc-on-hold--cancel-timer))
     (advice-remove 'eldoc--message #'eldoc-on-hold--msg)
     (advice-remove 'eldoc-pre-command-refresh-echo-area #'eldoc-on-hold--refresh)
     (eldoc-remove-command 'eldoc-on-hold--dummy)
     (eldoc-remove-command 'eldoc-on-hold-pick-up)
     (when eldoc-on-hold--msg-timer
-      (cancel-timer 'eldoc-on-hold--msg-timer))
+      (cancel-timer eldoc-on-hold--msg-timer))
     (when eldoc-on-hold--no-delay-timer
-      (cancel-timer 'eldoc-on-hold--no-delay-timer))
+      (cancel-timer eldoc-on-hold--no-delay-timer))
     (setq eldoc-on-hold--msg-timer nil)
     (setq eldoc-on-hold--no-delay-timer nil)
     (setq eldoc-on-hold--use-timer t)
-    (setq eldoc-on-hold--prev-interval nil)))
+    (setq eldoc-on-hold-delay-interval eldoc-on-hold--prev-interval)
+    (remove-hook 'post-command-hook #'eldoc-on-hold--cancel-timer)))
 
 (provide 'eldoc-on-hold)
 ;;; eldoc-on-hold.el ends here
