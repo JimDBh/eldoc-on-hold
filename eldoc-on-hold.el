@@ -72,7 +72,7 @@ STRING is the message to display."
          ;; This is caused by:
          ;; 1. eldoc-on-hold-use-timer is nil
          ;; 2. eldoc is currently displaying some message, and we should
-         ;;    continune doing so to avoid flickering.
+         ;;    continue doing so to avoid flickering.
          (funcall orig-fun string))
         ((not string)
          ;; The variable string is nil. This means eldoc is trying to clear the
