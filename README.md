@@ -15,15 +15,15 @@ Example using `straight` and `use-package`:
 
 ```lisp
 (use-package eldoc-on-hold
-    :straight (:type git :host github :repo "TODO: repo")
-    :demand t
-    :after eldoc
-    :bind
-    (("C-c h" . eldoc-on-hold-pick-up))
-    :custom
-    ((eldoc-on-hold-delay-interval 10))
-    :config
-    (global-eldoc-on-hold-mode 1))
+  :straight (:type git :host github :repo "JimDBh/eldoc-on-hold")
+  :demand t
+  :after eldoc
+  :bind
+  (("C-c h" . eldoc-on-hold-pick-up))
+  :custom
+  ((eldoc-on-hold-delay-interval 10))
+  :config
+  (global-eldoc-on-hold-mode 1))
 ```
 
 ## Usage

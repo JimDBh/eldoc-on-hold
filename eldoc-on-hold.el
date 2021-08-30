@@ -32,7 +32,7 @@
 ;;; Code:
 
 (eval-when-compile (require 'eldoc))
-(declare-function 'company-cancel nil)
+(declare-function company-cancel nil)
 
 (defcustom eldoc-on-hold-delay-interval 5.0
   "Delayed time to display eldoc."
